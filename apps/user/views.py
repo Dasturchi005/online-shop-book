@@ -6,8 +6,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from .models import User
 from .serializers import UserSerializer, UserLoginSerializer, UserProfileSerializer, UserUpdateSerializer
-
-
+from apps.book.models import Order
+from django.shortcuts import get_object_or_404
 class UserRegisterView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -79,21 +79,66 @@ class UserUpdateView(UpdateAPIView):
 
 
 
+class UserListView(ListAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAdminUser]
+
+    def list(self, request, *args, **kwargs):
+        users = self.get_queryset()
+        user_data = [{"id": user.id, "username": user.username, "email": user.email} for user in users]
+        return Response(
+            {"status": True, "msg": "Barcha foydalanuvchilar", "data": user_data},
+            status=status.HTTP_200_OK
+        )
+
 class UserDeleteView(DestroyAPIView):
     queryset = User.objects.all()
-    serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, *args, **kwargs):
-        super().delete(request, *args, **kwargs)
-
-        data = {
-            'status': True,
-            'msg': "Profil o'chirildi"
-        }
-        return Response(data=data)
-
-class UserListView(ListAPIView):
-    queryset = User.objects.all()    
-    serializer_class = UserProfileSerializer
     permission_classes = [IsAdminUser]
+
+    def destroy(self, request, *args, **kwargs):
+        user = get_object_or_404(User, id=kwargs.get('id'))
+        user.delete()
+        return Response(
+            {"status": True, "msg": "Foydalanuvchi o‘chirildi"},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+class OrderListView(ListAPIView):
+    queryset = Order.objects.all()
+    permission_classes = [IsAdminUser]
+
+    def list(self, request, *args, **kwargs):
+        orders = self.get_queryset()
+        order_data = [
+            {
+                "id": order.id,
+                "user": order.user.username,
+                "book": order.book.title,
+                "total_price": order.total_price,  
+            }
+            for order in orders
+        ]
+        return Response(
+            {"status": True, "msg": "Barcha buyurtmalar", "data": order_data},
+            status=status.HTTP_200_OK
+        )
+
+
+class AdminStatsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, *args, **kwargs):
+        total_users = User.objects.count()
+        total_orders = Order.objects.count()
+        total_revenue = sum(order.total_price for order in Order.objects.all())
+
+        stats = {
+            "total_users": total_users,
+            "total_orders": total_orders,
+            "total_revenue": total_revenue,
+        }
+
+        return Response(
+            {"status": True, "msg": "Umumiy statistika", "data": stats},
+            status=status.HTTP_200_OK
+        )
