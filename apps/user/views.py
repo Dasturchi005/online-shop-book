@@ -13,6 +13,11 @@ class UserRegisterView(CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
+    data = {
+        'status': True,
+        'msg': "Ro'yxatdan o'tdingiz"
+    }
+
 class UserLoginView(APIView):
     serializer_class = UserLoginSerializer
     permission_classes = [AllowAny]
@@ -22,6 +27,12 @@ class UserLoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
         return Response(UserProfileSerializer(user).data, status=status.HTTP_200_OK)
+    
+    data = {
+        'status': True,
+        'msg': "Login qilindi"
+    }
+       
 
 class UserLogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -34,11 +45,22 @@ class UserLogoutView(APIView):
             return Response({'message': 'Logout successful.'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    data = {
+        'status': True,
+        'msg': "Logout qilindi"
+    }
 
 class UserProfileView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
+
+    data = {
+        'status': True,
+        'msg': "Profil ma'lumotlari"
+    }
+    
 
 
 class UserUpdateView(UpdateAPIView):
@@ -66,8 +88,10 @@ class UserDeleteView(DestroyAPIView):
         super().delete(request, *args, **kwargs)
 
         data = {
-
+            'status': True,
+            'msg': "Profil o'chirildi"
         }
+        return Response(data=data)
 
 class UserListView(ListAPIView):
     queryset = User.objects.all()    

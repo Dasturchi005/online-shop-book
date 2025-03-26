@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate 
 from rest_framework import serializers
-from apps.user.models import User  # Modelni import qilish
+from apps.user.models import User  
 
 class UserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)  # ✅ Maydonni qo‘shish
@@ -20,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop("confirm_password")  # ✅ `confirm_password` ni olib tashlash
+        validated_data.pop("confirm_password")  
         user = User.objects.create_user(**validated_data)
         return user
    
