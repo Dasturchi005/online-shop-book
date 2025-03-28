@@ -21,6 +21,17 @@ class CategoryCreateView(CreateAPIView):
     class Meta:
         model = Category
         fields = ['id', 'name']
+class CategoryListView(ListAPIView):
+    queryset = Category.objects.all()   
+    serializer_class = CategorySerializer
+    permission_classes = [AllowAny]
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        return Response({
+            'status': True,
+            'msg': "Kategoriyalar ro'yxati",
+            'data': response.data  
+        }, status=status.HTTP_200_OK)
 
 
 class BookCreateView(CreateAPIView):
@@ -52,7 +63,7 @@ def list(self, request, *args, **kwargs):
 class BookDetailView(RetrieveAPIView):
     queryset = Book.objects.all()
     serializer_class = BookListSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
     def retrieve(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         return Response({
@@ -80,7 +91,7 @@ class BookDeleteView(DestroyAPIView):
     serializer_class = BookListSerializer
     permission_classes = [IsAdminUser]
 
-    def destroy(self, request, *args, **kwargs):
+    def delete(self, request, *args, **kwargs):
         super().destroy(request, *args, **kwargs)
         return Response({
             'status': True,
@@ -93,7 +104,7 @@ class BookSearchView(ListAPIView):
     permission_classes = [AllowAny]
     search_fields = ['title' , 'author']
 
-    def list(self, request, *args, **kwargs):
+    def serch(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         data = response.data
         data = {
@@ -105,7 +116,7 @@ class BookSearchView(ListAPIView):
 class WishListView(ListAPIView):
     queryset = WishList.objects.all()
     serializer_class = WishListSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         data = response.data
@@ -119,7 +130,7 @@ class WishListView(ListAPIView):
 class WishListCreateView(CreateAPIView):
     queryset = WishList.objects.all()
     serializer_class = WishListSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs): 
         serializer = self.get_serializer(data=request.data)
@@ -134,7 +145,7 @@ class WishListCreateView(CreateAPIView):
 class WishListDeleteView(DestroyAPIView):
     queryset = WishList.objects.all()
     serializer_class = WishListSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def destroy(self, request, *args, **kwargs):
         response = super().destroy(request, *args, **kwargs)
